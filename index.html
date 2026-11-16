@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#101827">
+<meta name="description" content="Metro Dash — a fast, colorful endless 3-lane runner.">
+<title>Metro Dash — Endless Runner</title>
+<style>
+:root{color-scheme:dark;--ink:#f8fafc;--muted:#a8b5c7;--cyan:#45e0d0;--gold:#ffd166}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#0b1220;color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+body{display:grid;place-items:center;padding:14px;overflow-x:hidden}
+.shell{width:min(100%,520px)}.top{display:flex;justify-content:space-between;align-items:center;margin:0 2px 10px}.brand{font-weight:900;letter-spacing:.08em;font-size:clamp(19px,5vw,26px)}.brand span{color:var(--cyan)}.tag{font-size:11px;color:var(--muted);letter-spacing:.13em}
+.game{position:relative;width:100%;aspect-ratio:420/680;max-height:calc(100dvh - 105px);border:1px solid #334155;border-radius:22px;overflow:hidden;background:#17243a;box-shadow:0 22px 70px #0009;touch-action:none}
+canvas{display:block;width:100%;height:100%}.hud{position:absolute;inset:12px 12px auto;display:flex;justify-content:space-between;pointer-events:none;gap:8px}.pill{background:#0b1220c9;border:1px solid #ffffff20;border-radius:13px;padding:7px 11px;backdrop-filter:blur(8px);font-size:12px;color:#cbd5e1}.pill b{color:white;font-size:17px;margin-left:5px}.center{position:absolute;inset:0;display:grid;place-items:center;background:#07101bbd;padding:24px;text-align:center}.panel{width:min(100%,330px);padding:25px 20px;border-radius:20px;background:linear-gradient(145deg,#1d344aee,#111c2cee);border:1px solid #ffffff25;box-shadow:0 16px 50px #0008}.panel h1{font-size:clamp(28px,8vw,42px);line-height:1;margin:0 0 10px}.panel p{color:#c3d0df;line-height:1.5;font-size:14px}.actions{display:flex;gap:9px;justify-content:center;flex-wrap:wrap;margin-top:18px}button{border:0;border-radius:12px;padding:12px 19px;font:700 14px system-ui;cursor:pointer;background:var(--cyan);color:#09212a;box-shadow:0 5px 0 #159b96}button.secondary{background:#334155;color:white;box-shadow:0 5px 0 #1e293b}button:active{transform:translateY(3px);box-shadow:0 2px 0 #159b96}.help{color:var(--muted);font-size:12px;text-align:center;margin:11px 0 0}.mobile-controls{display:flex;justify-content:center;gap:10px;margin:12px auto 0}.mobile-controls button{width:56px;height:46px;padding:0;font-size:20px;background:#1c3045;color:white;box-shadow:0 4px 0 #0b1726;border:1px solid #ffffff20}.mobile-controls button:active{background:#28506a}.footer{text-align:center;color:#718096;font-size:11px;margin:10px 0}
+@media(min-width:700px){.mobile-controls{opacity:.7}}@media(max-height:650px){body{padding:5px}.top{margin-bottom:5px}.game{max-height:calc(100dvh - 78px)}.mobile-controls{margin-top:5px}.mobile-controls button{height:38px}}
+</style>
+</head>
+<body>
+<main class="shell">
+ <header class="top"><div class="brand">METRO <span>DASH</span></div><div class="tag">ENDLESS RUNNER</div></header>
+ <section class="game" id="game" aria-label="Metro Dash game">
+  <canvas id="screen" width="420" height="680" aria-label="Game area"></canvas>
+  <div class="hud"><div class="pill">SCORE <b id="score">0</b></div><div class="pill">🪙 <b id="coins">0</b></div><div class="pill">BEST <b id="best">0</b></div></div>
+  <div class="center" id="overlay"><div class="panel"><h1>METRO<br><span style="color:#45e0d0">DASH</span></h1><p>Dodge barriers, leap over roadblocks, slide under signs and collect coins. How far can you run?</p><div class="actions"><button id="start">▶ PLAY</button></div><p class="help">← → change lane · ↑ jump · ↓ slide<br>Swipe on mobile or use the buttons below.</p></div></div>
+ </section>
+ <nav class="mobile-controls" aria-label="Touch controls">
+  <button data-action="left" aria-label="Move left">◀</button><button data-action="up" aria-label="Jump">▲</button><button data-action="down" aria-label="Slide">▼</button><button data-action="right" aria-label="Move right">▶</button>
+ </nav>
+ <p class="footer">A small original arcade game · No downloads or sign-in needed</p>
+</main>
+<script>
+(()=>{
+'use strict';
+const canvas=document.getElementById('screen'),ctx=canvas.getContext('2d');
+const $=id=>document.getElementById(id), overlay=$('overlay');
+const W=420,H=680, lanes=[132,210,288], horizon=145;
+let state='ready',lane=1,playerY=0,vy=0,slide=0,items=[],particles=[],distance=0,score=0,coins=0,speed=300,spawn=0,last=0,anim=0;
+let best=0;try{best=Number(localStorage.getItem('metrodash-best'))||0}catch(e){}
+$('best').textContent=best;
+const rand=(a,b)=>a+Math.random()*(b-a);
+function reset(){lane=1;playerY=0;vy=0;slide=0;items=[];particles=[];distance=0;score=0;coins=0;speed=300;spawn=.7;last=0;$('score').textContent='0';$('coins').textContent='0'}
+function start(){reset();state='running';overlay.hidden=true;last=performance.now();requestAnimationFrame(loop)}
+function end(){state='over';best=Math.max(best,Math.floor(score));try{localStorage.setItem('metrodash-best',String(best))}catch(e){}$('best').textContent=best;overlay.innerHTML='<div class="panel"><h1>RUN<br><span style="color:#ffd166">OVER</span></h1><p>Score: <b>'+Math.floor(score)+'</b><br>Coins collected: <b>'+coins+'</b><br>Best score: <b>'+best+'</b></p><div class="actions"><button id="again">↻ PLAY AGAIN</button></div><p class="help">You’ve got this. One more run?</p></div>';overlay.hidden=false;$('again').addEventListener('click',start)}
+function action(a){if(state!=='running')return;if(a==='left')lane=Math.max(0,lane-1);if(a==='right')lane=Math.min(2,lane+1);if(a==='up'&&playerY===0){vy=610;slide=0}if(a==='down'&&playerY===0)slide=.62}
+window.addEventListener('keydown',e=>{const map={ArrowLeft:'left',a:'left',ArrowRight:'right',d:'right',ArrowUp:'up',w:'up',' ':'up',ArrowDown:'down',s:'down'};if(map[e.key]){e.preventDefault();action(map[e.key])}if(e.key==='Escape'&&state==='running'){state='paused';showPause()}else if(e.key==='Escape'&&state==='paused'){resume()}});
+document.querySelectorAll('[data-action]').forEach(b=>b.addEventListener('pointerdown',e=>{e.preventDefault();action(b.dataset.action)}));
+$('start').addEventListener('click',start);
+let sx=0,sy=0;canvas.addEventListener('pointerdown',e=>{sx=e.clientX;sy=e.clientY});canvas.addEventListener('pointerup',e=>{if(state!=='running')return;let dx=e.clientX-sx,dy=e.clientY-sy;if(Math.max(Math.abs(dx),Math.abs(dy))<18)return;if(Math.abs(dx)>Math.abs(dy))action(dx>0?'right':'left');else action(dy<0?'up':'down')});
+function showPause(){overlay.innerHTML='<div class="panel"><h1>PAUSED</h1><p>Take a breather.</p><div class="actions"><button id="resume">RESUME</button><button class="secondary" id="quit">RESTART</button></div></div>';overlay.hidden=false;$('resume').onclick=resume;$('quit').onclick=start}
+function resume(){state='running';overlay.hidden=true;last=performance.now();requestAnimationFrame(loop)}
+function spawnItem(){const l=Math.floor(rand(0,3)),r=Math.random();items.push({lane:l,z:0,type:r<.46?'coin':r<.72?'block':r<.88?'barrier':'sign',taken:false})}
+function project(z){const t=Math.max(0,Math.min(1,z));return {y:horizon+t*535,x:lanes[1],scale:.18+t*1.05}}
+function draw(){
+ ctx.clearRect(0,0,W,H);
+ const sky=ctx.createLinearGradient(0,0,0,H);sky.addColorStop(0,'#172c48');sky.addColorStop(.48,'#4b7180');sky.addColorStop(1,'#192c3c');ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
+ // distant skyline
+ ctx.fillStyle='#172b3c';for(let i=0;i<12;i++){let x=i*39-5,h=35+(i*17%65);ctx.fillRect(x,horizon-h,29,h);ctx.fillStyle='#b8d9d0';for(let wy=horizon-h+8;wy<horizon-8;wy+=14)for(let wx=x+6;wx<x+25;wx+=11){ctx.fillRect(wx,wy,4,5)}ctx.fillStyle='#172b3c'}
+ // track
+ ctx.fillStyle='#303b49';ctx.beginPath();ctx.moveTo(90,horizon);ctx.lineTo(330,horizon);ctx.lineTo(420,H);ctx.lineTo(0,H);ctx.closePath();ctx.fill();
+ ctx.strokeStyle='#9aa7b2';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(90,horizon);ctx.lineTo(0,H);ctx.moveTo(330,horizon);ctx.lineTo(420,H);ctx.stroke();
+ // lane dividers
+ ctx.strokeStyle='#d2d9dd66';ctx.lineWidth=2;for(let i=1;i<=2;i++){ctx.beginPath();ctx.moveTo(90+i*80,horizon);ctx.lineTo(90+i*80-210,H);ctx.stroke()}
+ // sleepers
+ ctx.strokeStyle='#101d2a';ctx.lineWidth=5;for(let i=0;i<20;i++){let t=((i/20+distance/240)%1),p=project(t);let width=85*p.scale;ctx.beginPath();ctx.moveTo(210-width,p.y);ctx.lineTo(210+width,p.y);ctx.stroke()}
+ // side scenery
+ for(let i=0;i<9;i++){let t=((i/9+distance/400)%1),p=project(t),x=t<.5?Math.max(4,90-p.scale*70):Math.min(390,330+p.scale*70);ctx.fillStyle='#183c36';ctx.beginPath();ctx.arc(x,p.y-12*p.scale,13*p.scale,0,Math.PI*2);ctx.fill();ctx.fillStyle='#594b3b';ctx.fillRect(x-3*p.scale,p.y-8*p.scale,6*p.scale,18*p.scale)}
+ // objects farther first
+ for(const it of [...items].sort((a,b)=>a.z-b.z)){let p=project(it.z),x=lanes[it.lane],s=p.scale;if(it.type==='coin'){ctx.fillStyle='#ffd166';ctx.beginPath();ctx.arc(x,p.y-22*s,10*s,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#fff1a8';ctx.lineWidth=3*s;ctx.stroke();ctx.fillStyle='#b7791f';ctx.font='bold '+(12*s)+'px sans-serif';ctx.textAlign='center';ctx.fillText('$',x,p.y-18*s)}else if(it.type==='block'){ctx.fillStyle='#e76f51';ctx.fillRect(x-24*s,p.y-42*s,48*s,42*s);ctx.fillStyle='#ffb18f';ctx.fillRect(x-18*s,p.y-36*s,36*s,7*s)}else if(it.type==='barrier'){ctx.fillStyle='#f4a261';ctx.fillRect(x-31*s,p.y-25*s,62*s,17*s);ctx.fillStyle='#fff0d2';for(let q=-20;q<25;q+=20){ctx.save();ctx.translate(x+q*s,p.y-24*s);ctx.rotate(-.5);ctx.fillRect(0,0,7*s,18*s);ctx.restore()}}else{ctx.fillStyle='#8ecae6';ctx.fillRect(x-29*s,p.y-66*s,58*s,12*s);ctx.fillStyle='#354b5e';ctx.fillRect(x-24*s,p.y-54*s,5*s,54*s);ctx.fillRect(x+19*s,p.y-54*s,5*s,54*s)}}
+ // player
+ const px=lanes[lane],ground=595-playerY, bob=Math.sin(anim*13)*2;ctx.save();ctx.translate(px,ground+bob);let squish=slide>0?.55:1;ctx.scale(1,squish);
+ ctx.fillStyle='#07111b66';ctx.beginPath();ctx.ellipse(0,5,22,7,0,0,Math.PI*2);ctx.fill();
+ ctx.fillStyle='#172b48';ctx.fillRect(-14,-42,28,38);ctx.fillStyle='#45e0d0';ctx.fillRect(-13,-39,26,21);
+ ctx.fillStyle='#f0bd91';ctx.beginPath();ctx.arc(0,-53,13,0,Math.PI*2);ctx.fill();ctx.fillStyle='#27364b';ctx.fillRect(-13,-62,26,7);
+ ctx.strokeStyle='#f0bd91';ctx.lineWidth=7;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(-11,-34);ctx.lineTo(-19,-18);ctx.moveTo(11,-34);ctx.lineTo(18,-19);ctx.stroke();
+ ctx.strokeStyle='#e6edf5';ctx.lineWidth=8;ctx.beginPath();ctx.moveTo(-7,-5);ctx.lineTo(-11,2);ctx.moveTo(7,-5);ctx.lineTo(11,2);ctx.stroke();ctx.restore();
+}
+function loop(now){if(state!=='running')return;let dt=Math.min((now-last)/1000,.035);last=now;anim+=dt;distance+=speed*dt;speed=Math.min(540,speed+dt*3.5);score+=dt*speed*.11;$('score').textContent=Math.floor(score);
+ if(playerY>0||vy>0){playerY+=vy*dt;vy-=1450*dt;if(playerY<=0){playerY=0;vy=0}}
+ if(slide>0)slide=Math.max(0,slide-dt);
+ spawn-=dt;if(spawn<=0){spawnItem();spawn=Math.max(.48,rand(.72,1.18)-speed/1500)}
+ for(const it of items){it.z+=dt*(speed/560);if(it.z>.82&&!it.taken){if(it.lane===lane){if(it.type==='coin'){it.taken=true;coins++;$('coins').textContent=coins;score+=25}else if(it.type==='block'&&playerY>48){it.taken=true}else if(it.type==='barrier'&&playerY>65){it.taken=true}else if(it.type==='sign'&&slide>0){it.taken=true}else{end();return}}}}
+ items=items.filter(it=>it.z<1.08&&!it.taken);draw();requestAnimationFrame(loop)}
+draw();
+})();
+</script>
+</body>
+</html>
