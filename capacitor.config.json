@@ -1,0 +1,6 @@
+{
+  "appId": "com.candles1212.metrodash",
+  "appName": "Metro Dash",
+  "webDir": ".",
+  "bundledWebRuntime": false
+}
