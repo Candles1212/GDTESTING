@@ -53,7 +53,7 @@ let sx=0,sy=0;canvas.addEventListener('pointerdown',e=>{sx=e.clientX;sy=e.client
 function showPause(){overlay.innerHTML='<div class="panel"><h1>PAUSED</h1><p>Take a breather.</p><div class="actions"><button id="resume">RESUME</button><button class="secondary" id="quit">RESTART</button></div></div>';overlay.hidden=false;$('resume').onclick=resume;$('quit').onclick=start}
 function resume(){state='running';overlay.hidden=true;run()}
 function spawnItem(){const l=Math.floor(rand(0,3)),r=Math.random();items.push({lane:l,z:0,type:r<.46?'coin':r<.72?'block':r<.88?'barrier':'sign',taken:false})}
-function project(z){const t=Math.max(0,Math.min(1,z));return {y:horizon+t*535,x:lanes[1],scale:.18+t*1.05}}
+function project(z){const t=Math.max(0,Math.min(1,z));return {y:horizon+t*535,x:210,scale:.18+t*1.05}}
 function draw(){
  ctx.clearRect(0,0,W,H);
  const sky=ctx.createLinearGradient(0,0,0,H);sky.addColorStop(0,'#172c48');sky.addColorStop(.48,'#4b7180');sky.addColorStop(1,'#192c3c');ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
