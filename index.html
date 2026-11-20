@@ -14,7 +14,7 @@ body{display:grid;place-items:center;padding:14px;overflow-x:hidden;background:r
 .shell{width:min(100%,520px)}.top{display:flex;justify-content:space-between;align-items:center;margin:0 2px 10px}.brand{font-weight:900;letter-spacing:.08em;font-size:clamp(19px,5vw,26px)}.brand span{color:var(--cyan)}.tag{font-size:11px;color:var(--muted);letter-spacing:.13em}
 .tools{display:flex;align-items:center;gap:9px}.iconbtn{width:34px;height:34px;padding:0;border-radius:50%;font-size:15px;line-height:1;background:#1c3045;color:#fff;border:1px solid #ffffff22;box-shadow:0 3px 0 #0b1726}.iconbtn:active{transform:translateY(2px);box-shadow:0 1px 0 #0b1726}
 .game{position:relative;width:100%;aspect-ratio:420/680;max-height:calc(100dvh - 105px);margin:0 auto;border:1px solid #334155;border-radius:22px;overflow:hidden;background:#17243a;box-shadow:0 22px 70px #0009,0 0 0 1px #45e0d022;touch-action:none}
-canvas#screen{display:block;width:100%;height:100%}.hud{position:absolute;inset:12px 12px auto;display:flex;justify-content:space-between;pointer-events:none;gap:8px}.pill{background:#0b1220c9;border:1px solid #ffffff20;border-radius:13px;padding:7px 11px;backdrop-filter:blur(8px);font-size:12px;color:#cbd5e1}.pill b{color:white;font-size:17px;margin-left:5px}.center[hidden]{display:none}.center{position:absolute;inset:0;display:grid;place-items:center;background:#07101bbd;padding:18px;text-align:center;overflow:auto;backdrop-filter:blur(2px)}.panel{width:min(100%,340px);padding:22px 18px;border-radius:20px;background:linear-gradient(145deg,#1d344aee,#111c2cee);border:1px solid #ffffff25;box-shadow:0 16px 50px #0008}.panel h1{font-size:clamp(28px,8vw,42px);line-height:1;margin:0 0 10px;letter-spacing:.04em}.panel p{color:#c3d0df;line-height:1.5;font-size:14px;margin:8px 0}.actions{display:flex;gap:9px;justify-content:center;flex-wrap:wrap;margin-top:16px}button{border:0;border-radius:12px;padding:12px 19px;font:700 14px system-ui;cursor:pointer;background:var(--cyan);color:#09212a;box-shadow:0 5px 0 #159b96}button.secondary{background:#334155;color:white;box-shadow:0 5px 0 #1e293b}button:active{transform:translateY(3px);box-shadow:0 2px 0 #159b96}.help{color:var(--muted);font-size:12px;text-align:center;margin:11px 0 0}
+canvas#screen{display:block;width:100%;height:100%}.hud{position:absolute;inset:12px 12px auto;display:flex;justify-content:space-between;pointer-events:none;gap:8px}.pill{background:#0b1220c9;border:1px solid #ffffff20;border-radius:13px;padding:7px 11px;backdrop-filter:blur(8px);font-size:12px;color:#cbd5e1}.pill b{color:white;font-size:17px;margin-left:5px}#threeScene{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none}.center{z-index:4}.mobile-controls{position:relative;z-index:5}.center[hidden]{display:none}.center{position:absolute;inset:0;display:grid;place-items:center;background:#07101bbd;padding:18px;text-align:center;overflow:auto;backdrop-filter:blur(2px)}.panel{width:min(100%,340px);padding:22px 18px;border-radius:20px;background:linear-gradient(145deg,#1d344aee,#111c2cee);border:1px solid #ffffff25;box-shadow:0 16px 50px #0008}.panel h1{font-size:clamp(28px,8vw,42px);line-height:1;margin:0 0 10px;letter-spacing:.04em}.panel p{color:#c3d0df;line-height:1.5;font-size:14px;margin:8px 0}.actions{display:flex;gap:9px;justify-content:center;flex-wrap:wrap;margin-top:16px}button{border:0;border-radius:12px;padding:12px 19px;font:700 14px system-ui;cursor:pointer;background:var(--cyan);color:#09212a;box-shadow:0 5px 0 #159b96}button.secondary{background:#334155;color:white;box-shadow:0 5px 0 #1e293b}button:active{transform:translateY(3px);box-shadow:0 2px 0 #159b96}.help{color:var(--muted);font-size:12px;text-align:center;margin:11px 0 0}
 .chars{display:flex;gap:8px;justify-content:center;margin:14px 0 0}.char{width:80px;padding:6px 4px 5px;background:#162538;border:2px solid transparent;border-radius:14px;color:#cbd5e1;font-size:10px;letter-spacing:.14em;box-shadow:none;display:grid;place-items:center;gap:3px}.char canvas{width:56px;height:68px}.char.sel{border-color:var(--cyan);background:#1d3a4f;color:#fff;box-shadow:0 0 18px #45e0d033}.char:active{transform:none;box-shadow:none}
 .mobile-controls{display:flex;justify-content:center;gap:10px;margin:12px auto 0}.mobile-controls button{width:56px;height:46px;padding:0;font-size:20px;background:#1c3045;color:white;box-shadow:0 4px 0 #0b1726;border:1px solid #ffffff20}.mobile-controls button:active{background:#28506a}.footer{text-align:center;color:#718096;font-size:11px;margin:10px 0}
 @media(min-width:700px){.mobile-controls{opacity:.7}}@media(max-height:650px){body{padding:5px}.top{margin-bottom:5px}.game{max-height:calc(100dvh - 78px)}.mobile-controls{margin-top:5px}.mobile-controls button{height:38px}}
@@ -24,7 +24,7 @@ canvas#screen{display:block;width:100%;height:100%}.hud{position:absolute;inset:
 <main class="shell">
  <header class="top"><div class="brand">METRO <span>DASH</span></div><div class="tools"><div class="tag">ENDLESS RUNNER</div><button class="iconbtn" id="pauseBtn" aria-label="Pause">⏸</button><button class="iconbtn" id="soundBtn" aria-label="Sound on or off">🔊</button></div></header>
  <section class="game" id="game" aria-label="Metro Dash game">
-  <canvas id="screen" width="420" height="680" aria-label="Game area"></canvas>
+  <canvas id="screen" width="420" height="680" aria-label="Game area"></canvas><canvas id="threeScene" aria-hidden="true"></canvas>
   <div class="hud"><div class="pill">SCORE <b id="score">0</b></div><div class="pill">🪙 <b id="coins">0</b></div><div class="pill">BEST <b id="best">0</b></div></div>
   <div class="center" id="overlay"><div class="panel"><h1>METRO<br><span style="color:#45e0d0">DASH</span></h1><p>Dodge barriers, leap over roadblocks, slide under signs and collect coins. How far can you run?</p><div class="chars"></div><div class="actions"><button id="start">▶ PLAY</button></div><p class="help">← → change lane · ↑ jump · ↓ slide<br>Swipe on mobile or use the buttons below.</p></div></div>
  </section>
@@ -33,10 +33,28 @@ canvas#screen{display:block;width:100%;height:100%}.hud{position:absolute;inset:
  </nav>
  <p class="footer">A small original arcade game · No downloads or sign-in needed</p>
 </main>
-<script>
+<script type="module">
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js";
 (()=>{
 'use strict';
 const canvas=document.getElementById('screen'),ctx=canvas.getContext('2d');
+
+const threeCanvas=document.getElementById('threeScene');
+const renderer=new THREE.WebGLRenderer({canvas:threeCanvas,alpha:true,antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.6));renderer.setSize(420,680,false);renderer.setClearColor(0x000000,0);
+const scene3=new THREE.Scene();scene3.fog=new THREE.Fog(0x16263b,16,42);
+const cam3=new THREE.PerspectiveCamera(48,420/680,.1,60);cam3.position.set(0,6.5,15);cam3.lookAt(0,1,0);
+scene3.add(new THREE.HemisphereLight(0xbdeaff,0x273040,2));const key3=new THREE.DirectionalLight(0xffffff,2.5);key3.position.set(-5,8,7);scene3.add(key3);
+const mat3=(color,metal=0,rough=.5)=>new THREE.MeshStandardMaterial({color,metalness:metal,roughness:rough});
+const hero3=new THREE.Group();scene3.add(hero3);
+function box3(parent,w,h,d,color,x,y,z,metal=0){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat3(color,metal));m.position.set(x,y,z);parent.add(m);return m}
+function sphere3(parent,r,color,x,y,z){const m=new THREE.Mesh(new THREE.SphereGeometry(r,14,10),mat3(color));m.position.set(x,y,z);parent.add(m);return m}
+box3(hero3,.65,.9,.34,0x45e0d0,0,1.45,0);sphere3(hero3,.32,0xf0bd91,0,2.1,0);
+const hair=sphere3(hero3,.33,0x27364b,0,2.27,0);hair.scale.set(1,.48,1);
+const legs=[],arms=[];for(const s of [-1,1]){legs.push(box3(hero3,.22,.62,.24,0x172b48,s*.18,.55,0));arms.push(box3(hero3,.18,.58,.18,0x2bb3a6,s*.42,1.4,0));box3(hero3,.28,.14,.42,0xffffff,s*.18,.18,.08)}
+const train3=[];function makeTrain3(color){const g=new THREE.Group();box3(g,1.45,1.15,2.3,color,0,.85,0,.25);box3(g,1.48,.24,2.35,0x263647,0,1.48,0,.3);for(const x of [-.48,.48])for(const z of [-.72,.72]){const w=new THREE.Mesh(new THREE.CylinderGeometry(.18,.18,.12,16),mat3(0x111827,.4));w.rotation.z=Math.PI/2;w.position.set(x,.28,z);g.add(w)}for(const z of [-.65,0,.65])box3(g,.12,.4,.18,0x9be7ff,0,.92,z);return g}
+function render3D(){hero3.position.set((laneF-1)*2.25,Math.max(0,playerY/110),2.5);hero3.rotation.z=clamp((lane-laneF)*-.22,-.25,.25);hero3.scale.y=slide>0?.62:1;legs.forEach((m,i)=>m.rotation.x=Math.sin(anim*13+i*Math.PI)*.65);arms.forEach((m,i)=>m.rotation.z=Math.sin(anim*13+i*Math.PI)*.45);const visible=items.filter(it=>!it.done&&it.z>.02&&it.z<1.05&&(it.type==='block'||it.type==='barrier'));while(train3.length<visible.length){const g=makeTrain3(0xd94f4f);scene3.add(g);train3.push(g)}train3.forEach((g,i)=>{const it=visible[i];g.visible=!!it;if(it){g.position.set((it.lane-1)*2.25,.05,12-it.z*11);g.scale.setScalar(.35+it.z*.8);g.rotation.y=Math.sin(anim*1.5)*.02}});renderer.render(scene3,cam3)}
+
 const $=id=>document.getElementById(id), overlay=$('overlay'), game=$('game');
 const W=420,H=680, horizon=145, PT=.84;
 const laneX=(l,t)=>210+(l-1)*(80+60*Math.min(1,Math.max(0,t)));
@@ -250,13 +268,15 @@ function drawCoin(it,x,y,s){
  ctx.fillStyle='#fff3b0';ctx.beginPath();ctx.ellipse(x-2*s*spin,y-27*s,3.5*s*spin,5*s,0,0,Math.PI*2);ctx.fill();
 }
 function drawItem(it){
- if(it.z<.02)return;
+ if(it.z<.02||it.type==='block'||it.type==='barrier')return;
  const p=project(it.z),x=laneX(it.lane,it.z),s=p.scale;
  ctx.globalAlpha=clamp(it.z*7,0,1);
  if(it.type==='coin')drawCoin(it,x,p.y,s);else if(it.type==='shield'){ctx.save();ctx.shadowColor='#45e0d0';ctx.shadowBlur=14*s;ctx.fillStyle='#45e0d0';ctx.beginPath();ctx.arc(x,p.y-24*s,12*s,0,Math.PI*2);ctx.fill();ctx.fillStyle='#0b2331';ctx.font='bold '+(13*s)+'px system-ui';ctx.textAlign='center';ctx.fillText('S',x,p.y-20*s);ctx.restore()}else if(it.type==='block')drawBlock(it,x,p.y,s);else if(it.type==='barrier')drawBarrier(it,x,p.y,s);else drawSign(it,x,p.y,s);
  ctx.globalAlpha=1;
 }
 function drawPlayer(){
+ render3D();
+ return;
  const px=laneX(laneF,PT),hero=heroes[heroIdx];
  const air=playerY>2,bob=air||slide>0?0:-Math.abs(Math.sin(anim*14))*2.5;
  ctx.fillStyle='rgba(0,0,0,'+(.34-Math.min(.2,playerY/500))+')';ctx.beginPath();ctx.ellipse(px,598,(slide>0?26:20)-playerY*.06,6,0,0,Math.PI*2);ctx.fill();
