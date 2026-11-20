@@ -48,7 +48,7 @@ const rgb=(a,al)=>al==null?'rgb('+(a[0]|0)+','+(a[1]|0)+','+(a[2]|0)+')':'rgba('
 function rr(g,x,y,w,h,r){g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath()}
 
 /* ---------- state ---------- */
-let state='ready',lane=1,laneF=1,playerY=0,vy=0,slide=0,items=[],particles=[],texts=[],distance=0,score=0,coins=0,speed=300,spawn=0,last=0,anim=0,raf=0,shake=0,flash=0,crashT=0;
+let state='ready',lane=1,laneF=1,playerY=0,vy=0,slide=0,items=[],particles=[],texts=[],distance=0,score=0,coins=0,speed=220,spawn=0,last=0,anim=0,raf=0,shake=0,flash=0,crashT=0;
 let best=0,heroIdx=0,muted=false;
 try{best=Number(localStorage.getItem('metrodash-best'))||0;heroIdx=clamp(Number(localStorage.getItem('metrodash-char'))||0,0,2);muted=localStorage.getItem('metrodash-mute')==='1'}catch(e){}
 $('best').textContent=best;
@@ -148,7 +148,7 @@ function theme(){
 const vig=ctx.createRadialGradient(210,340,200,210,340,440);vig.addColorStop(0,'rgba(0,0,0,0)');vig.addColorStop(1,'rgba(0,0,0,.38)');
 
 /* ---------- game flow ---------- */
-function reset(){lane=1;laneF=1;playerY=0;vy=0;slide=0;items=[];particles=[];texts=[];distance=0;score=0;coins=0;speed=300;spawn=.7;last=0;shake=0;flash=0;$('score').textContent='0';$('coins').textContent='0'}
+function reset(){lane=1;laneF=1;playerY=0;vy=0;slide=0;items=[];particles=[];texts=[];distance=0;score=0;coins=0;speed=220;spawn=1.2;shield=0;last=0;shake=0;flash=0;$('score').textContent='0';$('coins').textContent='0'}
 function run(){cancelAnimationFrame(raf);last=performance.now();raf=requestAnimationFrame(loop)}
 function start(){ac();reset();state='running';overlay.hidden=true;run()}
 function crash(){
@@ -185,17 +185,17 @@ let sw=null;
 game.addEventListener('pointerdown',e=>{if(e.target.closest('button'))return;sw={id:e.pointerId,x:e.clientX,y:e.clientY};try{game.setPointerCapture(e.pointerId)}catch(_){}});
 game.addEventListener('pointermove',e=>{
  if(!sw||e.pointerId!==sw.id||state!=='running')return;
- const dx=e.clientX-sw.x,dy=e.clientY-sw.y,th=Math.max(20,game.clientWidth*.05);
+ if(sw.used)return;const dx=e.clientX-sw.x,dy=e.clientY-sw.y,th=Math.max(36,game.clientWidth*.12);
  if(Math.max(Math.abs(dx),Math.abs(dy))<th)return;
  if(Math.abs(dx)>Math.abs(dy))action(dx>0?'right':'left');else action(dy<0?'up':'down');
- sw.x=e.clientX;sw.y=e.clientY;
+ sw.used=true;
 });
 ['pointerup','pointercancel'].forEach(n=>game.addEventListener(n,e=>{if(sw&&e.pointerId===sw.id)sw=null}));
 
 /* ---------- world ---------- */
 function spawnItem(){
  const l=Math.floor(rand(0,3)),r=Math.random();
- if(r<.46){
+ if(r<.08){items.push({lane:l,z:0,type:'shield',v:0,done:false})}\n else if(r<.48){
   if(Math.random()<.55){for(let k=0;k<4;k++)items.push({lane:l,z:-k*.075,type:'coin',v:0})}
   else items.push({lane:l,z:0,type:'coin',v:0});
  }else items.push({lane:l,z:0,type:r<.72?'block':r<.88?'barrier':'sign',v:Math.floor(rand(0,3)),done:false});
@@ -252,7 +252,7 @@ function drawItem(it){
  if(it.z<.02)return;
  const p=project(it.z),x=laneX(it.lane,it.z),s=p.scale;
  ctx.globalAlpha=clamp(it.z*7,0,1);
- if(it.type==='coin')drawCoin(it,x,p.y,s);else if(it.type==='block')drawBlock(it,x,p.y,s);else if(it.type==='barrier')drawBarrier(it,x,p.y,s);else drawSign(it,x,p.y,s);
+ if(it.type==='coin')drawCoin(it,x,p.y,s);else if(it.type==='shield'){ctx.save();ctx.shadowColor='#45e0d0';ctx.shadowBlur=14*s;ctx.fillStyle='#45e0d0';ctx.beginPath();ctx.arc(x,p.y-24*s,12*s,0,Math.PI*2);ctx.fill();ctx.fillStyle='#0b2331';ctx.font='bold '+(13*s)+'px system-ui';ctx.textAlign='center';ctx.fillText('S',x,p.y-20*s);ctx.restore()}else if(it.type==='block')drawBlock(it,x,p.y,s);else if(it.type==='barrier')drawBarrier(it,x,p.y,s);else drawSign(it,x,p.y,s);
  ctx.globalAlpha=1;
 }
 function drawPlayer(){
@@ -323,16 +323,16 @@ function loop(now){
  if(state==='ready'||state==='over'){distance+=70*dt;updateFx(dt);draw();raf=requestAnimationFrame(loop);return}
  if(state==='crash'){crashT-=dt;shake=Math.max(0,shake-dt*16);updateFx(dt);draw();if(crashT<=0){showOver();return}raf=requestAnimationFrame(loop);return}
  if(state!=='running')return;
- distance+=speed*dt;speed=Math.min(540,speed+dt*3.5);score+=dt*speed*.11;$('score').textContent=Math.floor(score);
- laneF+=(lane-laneF)*Math.min(1,dt*16);if(Math.abs(lane-laneF)<.002)laneF=lane;
+ distance+=speed*dt;speed=Math.min(500,speed+dt*7.5);score+=dt*speed*.10;$('score').textContent=Math.floor(score);
+ laneF+=(lane-laneF)*Math.min(1,dt*11);if(Math.abs(lane-laneF)<.002)laneF=lane;
  if(playerY>0||vy!==0){playerY+=vy*dt;vy-=1450*dt;if(playerY<=0){playerY=0;vy=0}}
  if(slide>0)slide=Math.max(0,slide-dt);
- spawn-=dt;if(spawn<=0){spawnItem();spawn=Math.max(.48,rand(.72,1.18)-speed/1500)}
+ spawn-=dt;if(spawn<=0){spawnItem();spawn=Math.max(.58,rand(1.05,1.5)-speed/1600)}
  for(const it of items){
   it.z+=dt*(speed/560);
   if(it.z>.82&&!it.done&&Math.abs(laneF-it.lane)<.55){
-   if(it.type==='coin'){it.done=true;it.gone=true;coins++;$('coins').textContent=coins;score+=25;sfx.coin();const px=laneX(laneF,PT);burst(px,595-playerY-35,'#ffd166',8,170);texts.push({x:px,y:595-playerY-70,t:.7,s:'+25'})}
-   else{const ok=(it.type==='block'&&playerY>48)||(it.type==='barrier'&&playerY>65)||(it.type==='sign'&&slide>0);if(ok)it.done=true;else{crash();raf=requestAnimationFrame(loop);return}}
+   if(it.type==='coin'||it.type==='shield'){it.done=true;it.gone=true;const px=laneX(laneF,PT);if(it.type==='coin'){coins++;$('coins').textContent=coins;score+=25;sfx.coin();burst(px,595-playerY-35,'#ffd166',8,170);texts.push({x:px,y:595-playerY-70,t:.7,s:'+25'})}else{shield=1;tone(520,980,.18,'triangle',.08);burst(px,595-playerY-35,'#45e0d0',14,210);texts.push({x:px,y:565,t:.8,s:'SHIELD!'})}}
+   else{const ok=(it.type==='block'&&playerY>48)||(it.type==='barrier'&&playerY>65)||(it.type==='sign'&&slide>0);if(ok)it.done=true;else if(shield>0){shield=0;it.done=true;flash=.7;burst(laneX(laneF,PT),595-playerY-30,'#45e0d0',18,260);texts.push({x:laneX(laneF,PT),y:550,t:.8,s:'SAVED!'})}else{crash();raf=requestAnimationFrame(loop);return}}
   }
  }
  items=items.filter(it=>it.z<1.08&&!it.gone);
